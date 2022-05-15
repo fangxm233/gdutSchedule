@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Schedule</string>
+    <string name="title_schedule">课表</string>
+    <string name="title_attendance">考勤</string>
+    <string name="title_my">我的</string>
+    <string name="title_activity_login">登录</string>
+    <string name="prompt_number">学号</string>
+    <string name="prompt_password">密码</string>
+    <string name="prompt_verifyCode">验证码</string>
+    <string name="action_sign_in">登录</string>
+    <string name="invalid_verify_code">验证码为4位</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="login_failed">"登录失败"</string>
+
+    <string name="refresh_schedule">刷新课表</string>
+</resources>
