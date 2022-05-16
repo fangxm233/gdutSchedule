@@ -4,6 +4,7 @@ import org.json.JSONArray
 
 object TermsManager {
     var terms: HashMap<String, HashMap<String, CourseContent>> = hashMapOf()
+    val db = LocalDatabase()
 
     fun setTermCoursesFromJson(termId: String, json: JSONArray) {
         if (!terms.contains(termId))
@@ -54,6 +55,7 @@ object TermsManager {
             }
         }
 
+        db.SaveTermData(termId, coursesMap)
         println("添加课程 $termId")
     }
 
@@ -94,6 +96,7 @@ object TermsManager {
             }
         }
 
+        db.SaveTermData(termId, coursesMap)
         println("添加考试安排 $termId")
     }
 
@@ -102,7 +105,16 @@ object TermsManager {
     }
 
     fun hasTermData(termId: String): Boolean {
-        return terms.contains(termId)
+        return terms.contains(termId) || db.HasTermData(termId)
+    }
+
+    fun getTermData(termId: String): HashMap<String, CourseContent>? {
+        if (terms.containsKey(termId)) return terms[termId]
+        if (db.HasTermData(termId)) {
+            terms[termId] = db.GetTermData(termId)
+            return terms[termId]
+        }
+        return null
     }
 
     fun addClass(termId: String, content: ClassContent) {
@@ -116,7 +128,7 @@ object TermsManager {
     }
 
     fun getWeekCount(termId: String): Int {
-        val coursesMap = terms[termId]!!
+        val coursesMap = getTermData(termId)!!
 
         return coursesMap.maxOf {
             it.value.classes.maxOf {
@@ -126,7 +138,7 @@ object TermsManager {
     }
 
     fun getWeekClasses(termId: String, weekNum: Int): Array<ClassContent> {
-        val coursesMap = terms[termId]!!
+        val coursesMap = getTermData(termId)!!
 
         return coursesMap.flatMap {
             it.value.classes

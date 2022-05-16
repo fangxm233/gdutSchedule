@@ -10,4 +10,8 @@ public class LocalDatabase {
     public HashMap<String, CourseContent> GetTermData(String termId) {
         return null;
     }
+
+    public boolean HasTermData(String termId) {
+        return false;
+    }
 }
