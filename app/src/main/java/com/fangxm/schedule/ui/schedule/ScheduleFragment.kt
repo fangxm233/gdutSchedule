@@ -42,6 +42,7 @@ class ScheduleFragment : Fragment() {
         val recyclerView = binding.weekDisplay
         val pager = binding.contentPage
 
+        TermsManager.init(requireContext())
         if (!TermsManager.hasTermData("202102")) {
             return root
         }

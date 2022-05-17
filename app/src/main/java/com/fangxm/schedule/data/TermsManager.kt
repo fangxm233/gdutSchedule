@@ -1,17 +1,23 @@
 package com.fangxm.schedule.data
 
+import android.content.Context
 import org.json.JSONArray
 import java.util.*
 import kotlin.collections.HashMap
 
 object TermsManager {
     var terms: HashMap<String, TermContent> = hashMapOf()
-    val db = LocalDatabase()
+    lateinit var db: LocalDatabase
+
+    fun init(context: Context) {
+        db = LocalDatabase(context)
+    }
 
     fun setTermCoursesFromJson(termId: String, json: JSONArray) {
         if (!terms.contains(termId)) {
             terms[termId] = TermContent(termId)
             terms[termId]!!.courses = hashMapOf()
+            terms[termId]!!.startDate = Calendar.getInstance()
         }
 
         val coursesMap = terms[termId]!!.courses
@@ -59,7 +65,7 @@ object TermsManager {
             }
         }
 
-        db.SaveTermData(termId, coursesMap)
+        db!!.SaveTermData(termId, terms[termId]!!)
         println("添加课程 $termId")
     }
 
@@ -67,6 +73,7 @@ object TermsManager {
         if (!terms.contains(termId)) {
             terms[termId] = TermContent(termId)
             terms[termId]!!.courses = hashMapOf()
+            terms[termId]!!.startDate = Calendar.getInstance()
         }
 
         val coursesMap = terms[termId]!!.courses
@@ -101,7 +108,7 @@ object TermsManager {
             }
         }
 
-        db.SaveTermData(termId, coursesMap)
+        db!!.SaveTermData(termId, terms[termId]!!)
         println("添加考试安排 $termId")
     }
 
@@ -118,13 +125,13 @@ object TermsManager {
     }
 
     fun hasTermData(termId: String): Boolean {
-        return terms.contains(termId) || db.HasTermData(termId)
+        return terms.contains(termId) || db!!.HasTermData(termId)
     }
 
     fun getTermData(termId: String): TermContent? {
         if (terms.containsKey(termId)) return terms[termId]
-        if (db.HasTermData(termId)) {
-            terms[termId] = db.GetTermData(termId)
+        if (db!!.HasTermData(termId)) {
+            terms[termId] = db!!.GetTermData(termId)
             return terms[termId]
         }
         return null
