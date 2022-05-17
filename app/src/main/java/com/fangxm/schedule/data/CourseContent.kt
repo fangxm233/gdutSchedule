@@ -9,6 +9,18 @@ data class CourseContent(
     }
 
     fun merge(extraClasses: MutableList<ClassContent>) {
-        classes.addAll(extraClasses)
+        extraClasses.forEach {
+            val exist = classes.find { it2 ->
+                it2.weekNum == it.weekNum && it2.weekDate == it.weekDate
+            }
+            if (exist != null) {
+                if (exist.type == "class" && it.type == "exam") {
+                    classes.remove(exist)
+                    classes.add(it)
+                }
+                return@forEach
+            }
+            classes.add(it)
+        }
     }
 }
