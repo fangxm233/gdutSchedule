@@ -7,7 +7,7 @@ public class LocalDatabase {
 
     }
 
-    public HashMap<String, CourseContent> GetTermData(String termId) {
+    public TermContent GetTermData(String termId) {
         return null;
     }
 

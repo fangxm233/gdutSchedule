@@ -11,10 +11,12 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fangxm.schedule.R
 import com.fangxm.schedule.data.ClassContent
+import com.fangxm.schedule.data.MyCalendar
 import com.fangxm.schedule.databinding.FragmentWeekContentBinding
 import com.fangxm.schedule.ui.third.CustomButton
+import java.util.*
 
-class WeekContentFragment(var weekData: Array<Array<ClassContent>>) : Fragment() {
+class WeekContentFragment(var weekData: Array<Pair<MyCalendar, Array<ClassContent>>>) : Fragment() {
     private var _binding: FragmentWeekContentBinding? = null
 
     // This property is only valid between onCreateView and
@@ -40,11 +42,12 @@ class WeekContentFragment(var weekData: Array<Array<ClassContent>>) : Fragment()
 
             val weekDateView = inflater.inflate(R.layout.week_date_item, null) as LinearLayout
             weekDateView.findViewById<TextView>(R.id.content1).text = weekDate[i]
-            weekDateView.findViewById<TextView>(R.id.content2).text = "5.5"
+            weekDateView.findViewById<TextView>(R.id.content2).text =
+                 "${weekData[i].first.month.toString()}.${weekData[i].first.day}"
             var param = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 3.5f)
             innerList.addView(weekDateView, param)
 
-            val dayData = weekData[i].sortedBy {
+            val dayData = weekData[i].second.sortedBy {
                 it.startNum
             }
             if (dayData.count() == 0) {

@@ -1,4 +1,4 @@
-package com.fangxm.schedule.ui.my
+package com.fangxm.schedule.ui
 
 import android.content.Context
 import android.widget.BaseAdapter
@@ -8,8 +8,8 @@ import android.view.View
 import com.fangxm.schedule.R
 import android.widget.TextView
 
-class MySortAdapter(private val mContext: Context,
-                    private val data: List<Map<String, String>>) :
+class ButtonItemAdapter(private val mContext: Context,
+                        private val data: List<Map<String, String>>) :
     BaseAdapter() {
     private var viewHolder: ViewHolder? = null
 
@@ -33,6 +33,7 @@ class MySortAdapter(private val mContext: Context,
             view = LayoutInflater.from(mContext).inflate(R.layout.button_item, null)
             //初始化组件
             viewHolder!!.title = view.findViewById<View>(R.id.title) as TextView
+            viewHolder!!.extra = view.findViewById<View>(R.id.extra_info) as TextView
             viewHolder!!.divider = view.findViewById(R.id.divider) as View
             viewHolder!!.divider1 = view.findViewById(R.id.divider1) as View
             view.tag = viewHolder
@@ -41,6 +42,7 @@ class MySortAdapter(private val mContext: Context,
         }
         val map = data[position]
         viewHolder!!.title!!.text = map["title"]
+        if (map.containsKey("extra")) viewHolder!!.extra!!.text = map["extra"]
         viewHolder!!.divider!!.visibility = View.GONE
         viewHolder!!.divider1!!.visibility = View.GONE
 
@@ -67,6 +69,7 @@ class MySortAdapter(private val mContext: Context,
 
     internal class ViewHolder {
         var title: TextView? = null
+        var extra: TextView? = null
         var divider: View? = null
         var divider1: View? = null
     }

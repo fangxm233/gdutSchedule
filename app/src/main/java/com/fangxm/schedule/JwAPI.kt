@@ -19,7 +19,7 @@ import kotlin.collections.HashMap
 
 class JwAPI {
     companion object {
-        var cookie: String? = "JSESSIONID=E4F8C59F827795F334868EFB5360C566;"
+        var cookie: String? = "JSESSIONID=C385E62E7C6D068F6EB1714C739FD088;"
 
         fun fetchUrl(url: String, callback: (Result<ByteArray>) -> Unit) {
             val url = URL(url)
@@ -27,6 +27,7 @@ class JwAPI {
             conn.requestMethod = "GET"
             conn.setRequestProperty("accept", ",*/*")
             conn.setRequestProperty("accept-encoding", "gzip, deflate, br")
+            conn.setRequestProperty("Cookie", cookie)
 
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
@@ -203,9 +204,14 @@ class JwAPI {
                         callback(Result.failure(Exception("登录信息过期")))
                         return@postUrl
                     }
+                    if (content.contains("禁止访问")) {
+                        println("被禁止访问")
+                        callback(Result.failure(Exception("被禁止访问教务处")))
+                        return@postUrl
+                    }
 
                     val start = content.indexOf("<script type=\"text/javascript\">")
-
+                    println(content)
                     if (start == -1) {
                         println("解析失败")
                         callback(Result.failure(Exception("解析失败")))
@@ -253,9 +259,10 @@ class JwAPI {
                     } catch (e: java.lang.Exception) {
                         println("解析失败")
                         callback(Result.failure(Exception("解析失败")))
+                        return@postUrl
                     }
 
-                    if (!json!!.has("rows")) {
+                    if (!json.has("rows")) {
                         println("解析失败")
                         callback(Result.failure(Exception("解析失败")))
                         return@postUrl
@@ -311,6 +318,7 @@ class JwAPI {
                     } catch (e: java.lang.Exception) {
                         println("解析失败")
                         callback(Result.failure(Exception("解析失败")))
+                        return@fetchUrl
                     }
 
                     val date = json!!.getJSONArray(1)
@@ -321,6 +329,8 @@ class JwAPI {
                     calendar.set(date[0], date[1], date[2])
                     println("开学日期：$calendar")
                     callback(Result.success(calendar))
+                } else {
+                    callback(Result.failure(java.lang.Exception("获取失败")))
                 }
             }
         }

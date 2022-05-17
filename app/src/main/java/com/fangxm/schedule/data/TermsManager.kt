@@ -1,16 +1,20 @@
 package com.fangxm.schedule.data
 
 import org.json.JSONArray
+import java.util.*
+import kotlin.collections.HashMap
 
 object TermsManager {
-    var terms: HashMap<String, HashMap<String, CourseContent>> = hashMapOf()
+    var terms: HashMap<String, TermContent> = hashMapOf()
     val db = LocalDatabase()
 
     fun setTermCoursesFromJson(termId: String, json: JSONArray) {
-        if (!terms.contains(termId))
-            terms[termId] = hashMapOf()
+        if (!terms.contains(termId)) {
+            terms[termId] = TermContent(termId)
+            terms[termId]!!.courses = hashMapOf()
+        }
 
-        val coursesMap = terms[termId]!!
+        val coursesMap = terms[termId]!!.courses
 
         val colorQueue = ColorQueue()
 
@@ -60,10 +64,12 @@ object TermsManager {
     }
 
     fun setTermExamsFromJson(termId: String, json: JSONArray) {
-        if (!terms.contains(termId))
-            terms[termId] = hashMapOf()
+        if (!terms.contains(termId)) {
+            terms[termId] = TermContent(termId)
+            terms[termId]!!.courses = hashMapOf()
+        }
 
-        val coursesMap = terms[termId]!!
+        val coursesMap = terms[termId]!!.courses
 
         val color = ColorQueue.examColor
 
@@ -92,7 +98,6 @@ object TermsManager {
                 coursesMap[title]!!.merge(classList)
             } else {
                 coursesMap[title] = CourseContent(title, classList)
-                println(title + color)
             }
         }
 
@@ -100,15 +105,23 @@ object TermsManager {
         println("添加考试安排 $termId")
     }
 
+    fun setTermStartDate(termId: String, date: Calendar) {
+        if (!terms.contains(termId)) {
+            terms[termId] = TermContent(termId)
+            terms[termId]!!.courses = hashMapOf()
+        }
+        terms[termId]!!.startDate = date
+    }
+
     fun clearTermData(termId: String) {
-        terms[termId] = hashMapOf()
+        terms.remove(termId)
     }
 
     fun hasTermData(termId: String): Boolean {
         return terms.contains(termId) || db.HasTermData(termId)
     }
 
-    fun getTermData(termId: String): HashMap<String, CourseContent>? {
+    fun getTermData(termId: String): TermContent? {
         if (terms.containsKey(termId)) return terms[termId]
         if (db.HasTermData(termId)) {
             terms[termId] = db.GetTermData(termId)
@@ -118,7 +131,7 @@ object TermsManager {
     }
 
     fun addClass(termId: String, content: ClassContent) {
-        val coursesMap = terms[termId]!!
+        val coursesMap = terms[termId]!!.courses
 
         if (coursesMap.contains(content.title)) {
             coursesMap[content.title]!!.merge(mutableListOf(content))
@@ -128,7 +141,7 @@ object TermsManager {
     }
 
     fun getWeekCount(termId: String): Int {
-        val coursesMap = getTermData(termId)!!
+        val coursesMap = getTermData(termId)!!.courses
 
         return coursesMap.maxOf {
             it.value.classes.maxOf {
@@ -138,7 +151,7 @@ object TermsManager {
     }
 
     fun getWeekClasses(termId: String, weekNum: Int): Array<ClassContent> {
-        val coursesMap = getTermData(termId)!!
+        val coursesMap = getTermData(termId)!!.courses
 
         return coursesMap.flatMap {
             it.value.classes
@@ -151,5 +164,9 @@ object TermsManager {
         return (1..getWeekCount(termId)).map {
             getWeekClasses(termId, it)
         }.toTypedArray()
+    }
+
+    fun getTermStartDate(termId: String): Calendar {
+        return terms[termId]!!.startDate
     }
 }

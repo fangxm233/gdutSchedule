@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.fangxm.schedule.data.MyCalendar
 import com.fangxm.schedule.data.TermsManager
 import com.fangxm.schedule.databinding.FragmentScheduleBinding
 import com.fangxm.schedule.ui.schedule.weekContent.OnPageChangeCallBack
 import com.fangxm.schedule.ui.schedule.weekContent.WeekContentFragmentAdapter
+import java.util.*
 
 class ScheduleFragment : Fragment() {
 
@@ -48,13 +50,6 @@ class ScheduleFragment : Fragment() {
         val list = List(weekData.size) {
             "第" + (it + 1) + "周"
         }
-        val data = Array(weekData.size) {
-            (1..7).map { weekDate ->
-                weekData[it].filter { content ->
-                    content.weekDate == weekDate
-                }.toTypedArray()
-            }.toTypedArray()
-        }
 
         val horizontalLayoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         recyclerView.layoutManager = horizontalLayoutManager
@@ -62,6 +57,17 @@ class ScheduleFragment : Fragment() {
             pager.setCurrentItem(it, true)
         }
         recyclerView.adapter = weekNumAdapter
+
+        var startDate = MyCalendar(TermsManager.getTermStartDate("202102")).previousDay()
+
+        val data = Array(weekData.size) {
+            (1..7).map {weekDate ->
+                startDate = startDate.nextDay()
+                Pair(startDate, weekData[it].filter { content ->
+                    content.weekDate == weekDate
+                }.toTypedArray())
+            }.toTypedArray()
+        }
 
         val fragmentAdapter = WeekContentFragmentAdapter(requireActivity(), data)
         pager.adapter = fragmentAdapter

@@ -51,6 +51,9 @@ class MyFragment : Fragment() {
         }
 
         val adapter = ButtonItemAdapter(requireActivity().applicationContext, list)
+
+        val termId = "202102"
+
         listView.setOnItemClickListener { _, _, i, _ ->
             val data = list[i]
             if (data["title"] == "学生登录") {
@@ -64,8 +67,8 @@ class MyFragment : Fragment() {
             if (data["title"] == "获取课表") {
                 // 防止切换走了导致requireContext报错
                 val context = requireContext()
-                TermsManager.clearTermData("202102")
-                JwAPI.getCoursesData("202102") {
+                TermsManager.clearTermData(termId)
+                JwAPI.getCoursesData(termId) {
                     if (it.isFailure) {
                         val message = it.exceptionOrNull()!!.message!!
                         if (message == "登录信息过期") {
@@ -78,23 +81,34 @@ class MyFragment : Fragment() {
                         }
                     }
 
-                    TermsManager.setTermCoursesFromJson("202102", it.getOrThrow())
+                    TermsManager.setTermCoursesFromJson(termId, it.getOrThrow())
                     Toast.makeText(context, "课表获取成功", Toast.LENGTH_SHORT).show()
                 }
-                JwAPI.getExamData("202102") {
+                JwAPI.getExamData(termId) {
                     if (it.isFailure) {
                         val message = it.exceptionOrNull()!!.message!!
-                        if (message == "登录信息过期") {
-                            return@getExamData
-                        }
                         if (message != "登录信息过期") {
                             Toast.makeText(context, "未知错误: $message", Toast.LENGTH_SHORT).show()
                             return@getExamData
                         }
+                        return@getExamData
                     }
 
-                    TermsManager.setTermExamsFromJson("202102", it.getOrThrow())
+                    TermsManager.setTermExamsFromJson(termId, it.getOrThrow())
                     Toast.makeText(context, "考试安排获取成功", Toast.LENGTH_SHORT).show()
+                }
+                JwAPI.getTermStartDate(termId) {
+                    if (it.isFailure) {
+                        val message = it.exceptionOrNull()!!.message!!
+                        if (message != "登录信息过期") {
+                            Toast.makeText(context, "未知错误: $message", Toast.LENGTH_SHORT).show()
+                            return@getTermStartDate
+                        }
+                        return@getTermStartDate
+                    }
+
+                    TermsManager.setTermStartDate(termId, it.getOrThrow())
+                    Toast.makeText(context, "开学日期获取成功", Toast.LENGTH_SHORT).show()
                 }
             }
         }

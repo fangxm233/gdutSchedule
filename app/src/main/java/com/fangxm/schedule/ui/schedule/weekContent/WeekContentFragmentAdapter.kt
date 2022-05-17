@@ -5,8 +5,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.fangxm.schedule.data.ClassContent
+import com.fangxm.schedule.data.MyCalendar
+import java.util.*
 
-class WeekContentFragmentAdapter(activity: FragmentActivity, val data: Array<Array<Array<ClassContent>>>) :
+class WeekContentFragmentAdapter(activity: FragmentActivity, val data: Array<Array<Pair<MyCalendar, Array<ClassContent>>>>) :
     FragmentStateAdapter(activity) {
 
     override fun getItemCount(): Int {
