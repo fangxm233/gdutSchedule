@@ -46,6 +46,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:text="分钟"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <Switch
@@ -59,6 +68,6 @@
         android:id="@+id/raise_attendance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="发起签到" />
+        android:text="发起考勤" />
 
 </LinearLayout>

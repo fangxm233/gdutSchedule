@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fangxm.schedule" >
+    package="com.fangxm.schedule">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".ScheduleApplication"
@@ -12,21 +15,24 @@
         android:theme="@style/Theme.Schedule"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".CheckedStudents"
+            android:exported="true"
+            android:label="@string/details"/>
+        <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:label="@string/title_activity_login" >
-        </activity>
+            android:label="@string/title_activity_login" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>

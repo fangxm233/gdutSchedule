@@ -79,7 +79,8 @@ class LoginActivity : AppCompatActivity() {
             )
         }
 
-        val callback = { it: Result<String> ->
+        val type = intent.getStringExtra("type")!!
+        val callback = { it: Result<Unit> ->
             if (it.isSuccess) {
                 Toast.makeText(applicationContext, "登录成功", Toast.LENGTH_SHORT).show()
                 setResult(200)
@@ -108,6 +109,7 @@ class LoginActivity : AppCompatActivity() {
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
                         loginViewModel.login(
+                            type,
                             number.text.toString(),
                             password.text.toString(),
                             verifyCode.text.toString(),
@@ -123,22 +125,28 @@ class LoginActivity : AppCompatActivity() {
                         verifyCodeImg.setImageBitmap(it.getOrThrow())
                     }
             }
-
-            login.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(
-                    number.text.toString(),
-                    password.text.toString(),
-                    verifyCode.text.toString(),
-                    callback
-                )
-            }
         }
 
         verifyCodeImg.setOnClickListener {
             loginViewModel.getVerifyCodeImg {
                 verifyCodeImg.setImageBitmap(it.getOrThrow())
             }
+        }
+
+        login.setOnClickListener {
+            loading.visibility = View.VISIBLE
+            loginViewModel.login(
+                type,
+                number.text.toString(),
+                password.text.toString(),
+                verifyCode.text.toString(),
+                callback
+            )
+        }
+
+        if (type == "teacher") {
+            verifyCode.visibility = View.GONE
+            verifyCodeImg.visibility = View.GONE
         }
     }
 

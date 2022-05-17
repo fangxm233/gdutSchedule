@@ -13,4 +13,6 @@
     <string name="login_failed">"登录失败"</string>
 
     <string name="refresh_schedule">刷新课表</string>
+    <string name="details">详情</string>
+    <string name="action_settings">Settings</string>
 </resources>

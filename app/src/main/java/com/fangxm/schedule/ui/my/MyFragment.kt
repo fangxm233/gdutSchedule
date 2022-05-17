@@ -13,6 +13,7 @@ import com.fangxm.schedule.JwAPI
 import com.fangxm.schedule.LoginActivity
 import com.fangxm.schedule.data.TermsManager
 import com.fangxm.schedule.databinding.FragmentMyBinding
+import com.fangxm.schedule.ui.ButtonItemAdapter
 
 class MyFragment : Fragment() {
 
@@ -49,15 +50,15 @@ class MyFragment : Fragment() {
             map
         }
 
-        val adapter = MySortAdapter(requireActivity().applicationContext, list)
+        val adapter = ButtonItemAdapter(requireActivity().applicationContext, list)
         listView.setOnItemClickListener { _, _, i, _ ->
             val data = list[i]
             if (data["title"] == "学生登录") {
-                toLogin(1)
+                toLogin(1, "student")
                 return@setOnItemClickListener
             }
             if (data["title"] == "教师登录") {
-                toLogin(2)
+                toLogin(1, "teacher")
                 return@setOnItemClickListener
             }
             if (data["title"] == "获取课表") {
@@ -69,7 +70,7 @@ class MyFragment : Fragment() {
                         val message = it.exceptionOrNull()!!.message!!
                         if (message == "登录信息过期") {
                             Toast.makeText(context, "登录信息过期", Toast.LENGTH_SHORT).show()
-                            toLogin(2)
+                            toLogin(1, "student")
                             return@getCoursesData
                         } else {
                             Toast.makeText(context, "未知错误: $message", Toast.LENGTH_SHORT).show()
@@ -103,9 +104,10 @@ class MyFragment : Fragment() {
         return root
     }
 
-    fun toLogin(requestCode: Int) {
+    fun toLogin(requestCode: Int, type: String) {
         val intent = Intent()
         intent.setClass(requireActivity().applicationContext, LoginActivity::class.java)
+        intent.putExtra("type", type)
         ActivityManager.getCurrentActivity()?.startActivityForResult(intent, requestCode)
     }
 

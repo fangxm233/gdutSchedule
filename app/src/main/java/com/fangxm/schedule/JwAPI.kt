@@ -21,7 +21,7 @@ class JwAPI {
     companion object {
         var cookie: String? = "JSESSIONID=E4F8C59F827795F334868EFB5360C566;"
 
-        fun fetchUrl(url: String, callback: (Result<InputStream>) -> Unit) {
+        fun fetchUrl(url: String, callback: (Result<ByteArray>) -> Unit) {
             val url = URL(url)
             val conn = url.openConnection() as HttpsURLConnection
             conn.requestMethod = "GET"
@@ -30,7 +30,7 @@ class JwAPI {
 
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
-            var result: Result<InputStream>? = null
+            var result: Result<ByteArray>? = null
             val thread = Thread {
                 if (conn.responseCode == 200) {
                     println("success get from ${conn.url}")
@@ -40,7 +40,7 @@ class JwAPI {
                             println(cookie)
                         }
                     }
-                    result = Result.success(conn.inputStream)
+                    result = Result.success(conn.inputStream.readBytes())
                 } else {
                     result = Result.failure(java.net.ConnectException())
                 }
@@ -56,7 +56,7 @@ class JwAPI {
         fun postUrl(
             url: String,
             content: Map<String, String>?,
-            callback: (Result<InputStream>) -> Unit
+            callback: (Result<ByteArray>) -> Unit
         ) {
             val url = URL(url)
             val conn = url.openConnection() as HttpsURLConnection
@@ -71,7 +71,7 @@ class JwAPI {
             val param = if (content != null) map2Url(content) else ""
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
-            var result: Result<InputStream>? = null
+            var result: Result<ByteArray>? = null
             val thread = Thread {
                 conn.connect()
                 val writer = OutputStreamWriter(conn.outputStream, "utf-8")
@@ -80,7 +80,7 @@ class JwAPI {
 
                 result = if (conn.responseCode == 200) {
                     println("success post from ${conn.url}")
-                    Result.success(conn.inputStream)
+                    Result.success(conn.inputStream.readBytes())
                 } else {
                     Result.failure(java.net.ConnectException())
                 }
@@ -109,19 +109,19 @@ class JwAPI {
             return url.toString()
         }
 
-        fun getResponseBody(stream: InputStream): JSONObject {
-            val reader = stream.reader(Charset.forName("utf-8"))
-            val tokener = JSONTokener(reader.readText())
+        fun getResponseBody(stream: ByteArray): JSONObject {
+            val reader = stream.toString(Charset.forName("utf-8"))
+            val tokener = JSONTokener(reader)
             val json = JSONObject(tokener)
             return json
         }
 
-        fun decodeResourceToString(stream: InputStream): String {
-            return Gzip.uncompressToString(stream.readBytes(), "utf-8")
+        fun decodeResourceToString(stream: ByteArray): String {
+            return Gzip.uncompressToString(stream, "utf-8")
         }
 
-        fun getResponseContent(stream: InputStream): String {
-            return stream.reader(Charset.forName("utf-8")).readText()
+        fun getResponseContent(stream: ByteArray): String {
+            return stream.toString(Charset.forName("utf-8"))
         }
 
         private fun getVerifyCodeImgUrl(): String {
@@ -161,7 +161,7 @@ class JwAPI {
         fun getVerifyCodeImg(callback: (Result<Bitmap>) -> Unit) {
             fetchUrl(getVerifyCodeImgUrl()) {
                 if (it.isSuccess) {
-                    val result = BitmapFactory.decodeStream(it.getOrThrow())
+                    val result = BitmapFactory.decodeByteArray(it.getOrThrow(), 0, it.getOrThrow().size)
                     callback(Result.success(result!!))
                 } else {
                     callback(Result.failure(it.exceptionOrNull()!!))
@@ -173,7 +173,7 @@ class JwAPI {
             number: String,
             password: String,
             verifyCode: String,
-            callback: (Result<String>) -> Unit
+            callback: (Result<Unit>) -> Unit
         ) {
             val body = HashMap<String, String>()
             body["account"] = number
@@ -183,7 +183,7 @@ class JwAPI {
                 if (it.isSuccess) {
                     val content = getResponseBody(it.getOrThrow())
                     if (content["code"] == 0) {
-                        callback(Result.success(content["message"] as String))
+                        callback(Result.success(Unit))
                     } else {
                         callback(Result.failure(Exception(content["message"] as String)))
                     }

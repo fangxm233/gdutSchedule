@@ -1,6 +1,8 @@
 package com.fangxm.schedule.data
 
 import android.graphics.Bitmap
+import android.widget.Toast
+import com.fangxm.schedule.BcAPI
 import com.fangxm.schedule.JwAPI
 import com.fangxm.schedule.data.model.LoggedInUser
 import java.io.IOException
@@ -14,15 +16,18 @@ class LoginDataSource {
         JwAPI.getVerifyCodeImg(callback)
     }
 
-    fun login(number: String, password: String, verifyCode: String, callback: (Result<String>) -> Unit) {
-//        try {
+    fun login(type: String, number: String, password: String, verifyCode: String, callback: (Result<Unit>) -> Unit) {
+        if (type == "student") {
             JwAPI.login(number, password, verifyCode, callback)
-            // TODO: handle loggedInUser authentication
-//            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "Jane Doe")
-//            return Result.success(fakeUser)
-//        } catch (e: Throwable) {
-//            return Result.failure(IOException("Error logging in", e))
-//        }
+            BcAPI.login(type[0].toString(), number, password){
+                if (it.isSuccess) {
+                    println("考勤登录成功")
+                } else {
+                    println("考勤登录失败")
+                }
+            }
+        }
+        else BcAPI.login(type[0].toString(), number, password, callback)
     }
 
     fun logout() {

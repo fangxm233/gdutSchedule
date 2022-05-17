@@ -4,10 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.core.view.children
 import com.fangxm.schedule.R
 import java.lang.Exception
@@ -15,19 +12,22 @@ import java.lang.Exception
 class AttendanceSortAdapter(private val mContext: Context,
                             private val type: String,
                             private val current: List<AttendanceContent>,
-                            private val history: List<AttendanceContent>) :
+                            private val history: List<AttendanceContent>,
+                            private val teachingCourses: HashMap<String, String>,
+                            private val duration: List<Int>,
+                            private val raiseAttendanceCallback: (cno: String, duration: Int, locate: Boolean) -> Unit):
     BaseAdapter() {
 
     override fun getCount(): Int {
         var count = 0
         if (type == "teacher") count = 1
         if (type == "button") return current.size
-        if (current.isNotEmpty()) {
-            count += current.size + 1
-        }
-        if (history.isNotEmpty()) {
-            count += history.size + 1
-        }
+        count += if (current.isNotEmpty()) {
+            current.size + 1
+        } else 2
+        count += if (history.isNotEmpty()) {
+            history.size + 1
+        } else 2
         return count
     }
 
@@ -41,33 +41,118 @@ class AttendanceSortAdapter(private val mContext: Context,
 
     override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
         val inflater = LayoutInflater.from(mContext)
+        var p0 = p0
 
         if (type == "button") {
             val data = current[p0]
             val view = inflater.inflate(R.layout.button_item, null)
             view.findViewById<TextView>(R.id.title).text = data.title
+            view.tag = data.title
             return view
         } else if (type == "teacher") {
             if (p0 == 0) {
                 val view = inflater.inflate(R.layout.raise_attendance, null)
+                val courseSpinner = view.findViewById<Spinner>(R.id.course_select)
+                val courseAdapter = SpinnerAdapter(mContext, teachingCourses.keys.toList())
+                courseSpinner.adapter = courseAdapter
+
+                val durationSpinner = view.findViewById<Spinner>(R.id.duration_select)
+                val durationAdapter = SpinnerAdapter(mContext, duration.map { it.toString() })
+                durationSpinner.adapter = durationAdapter
+
+                val locateSwitch = view.findViewById<Switch>(R.id.locate_switch)
+
+                val button = view.findViewById<Button>(R.id.raise_attendance)
+                button.setOnClickListener{
+                    raiseAttendanceCallback(teachingCourses[(courseSpinner.selectedView as TextView).text]!!,
+                        (durationSpinner.selectedView as TextView).text.toString().toInt(), locateSwitch.isChecked)
+                }
                 return view
             }
-            if (current.isNotEmpty()) {
-                if (p0 == 1) {
-                    val view = TextView(mContext)
-                    view.text = "当前签到"
-                    return view
-                }
-                if (p0 > 1 && p0 < current.size + 3)
-                    return createTeacherAttendance(current[p0 - 2])
+            p0--
+
+            if (p0 == 0) {
+                val view = TextView(mContext)
+                view.text = "当前签到"
+                return view
             }
-            if (history.isNotEmpty()) {
-                if (p0 == current.size + 1) {
-                    val view = TextView(mContext)
-                    view.text = "历史签到"
+            p0--
+
+            if (current.isNotEmpty()) {
+                if (p0 < current.size) {
+                    val view = createTeacherAttendance(current[p0])
+                    view.tag = current[p0]
                     return view
                 }
-                return createTeacherAttendance(history[p0 - current.size - 3])
+                p0 -= current.size - 1
+            } else if (p0 == 0) {
+                val view = inflater.inflate(R.layout.button_item, null)
+                view.findViewById<TextView>(R.id.title).text = "暂无数据"
+                view.findViewById<View>(R.id.divider).visibility = View.VISIBLE
+                view.tag = "暂无数据"
+                return view
+            }
+            p0--
+
+            if (p0 == 0) {
+                val view = TextView(mContext)
+                view.text = "历史签到"
+                return view
+            }
+            p0--
+
+            if (history.isNotEmpty()) {
+                val view = createTeacherAttendance(history[p0])
+                view.tag = history[p0]
+                return view
+            } else if (p0 == 0) {
+                val view = inflater.inflate(R.layout.button_item, null)
+                view.findViewById<TextView>(R.id.title).text = "暂无数据"
+                view.findViewById<View>(R.id.divider).visibility = View.VISIBLE
+                view.tag = "暂无数据"
+                return view
+            }
+        } else if (type == "student") {
+            if (p0 == 0) {
+                val view = TextView(mContext)
+                view.text = "当前签到"
+                return view
+            }
+            p0--
+
+            if (current.isNotEmpty()) {
+                if (p0 < current.size) {
+                    val view = createStudentAttendance(current[p0])
+                    view.tag = current[p0]
+                    return view
+                }
+                p0 -= current.size - 1
+            } else if (p0 == 0) {
+                val view = inflater.inflate(R.layout.button_item, null)
+                view.findViewById<TextView>(R.id.title).text = "暂无数据"
+                view.findViewById<View>(R.id.divider).visibility = View.VISIBLE
+                view.tag = "暂无数据"
+                return view
+            }
+            p0--
+
+            if (p0 == 0) {
+                val view = TextView(mContext)
+                view.text = "历史签到"
+                return view
+            }
+            p0--
+
+            if (history.isNotEmpty()) {
+                val view = createStudentAttendance(history[p0])
+                view.tag = history[p0]
+                return view
+            } else if (p0 == 0) {
+                val view = inflater.inflate(R.layout.button_item, null)
+                view.findViewById<TextView>(R.id.title).text = "暂无数据"
+                view.findViewById<View>(R.id.divider).visibility = View.VISIBLE
+                view.tag = "暂无数据"
+                return view
             }
         }
         throw Exception()
@@ -81,7 +166,7 @@ class AttendanceSortAdapter(private val mContext: Context,
         val type = inflater.inflate(R.layout.button_item, null)
         type.findViewById<View>(R.id.line_divider).visibility = View.VISIBLE
         type.findViewById<TextView>(R.id.title).text = "签到类型:"
-        type.findViewById<TextView>(R.id.extra_info).text = getAttendanceTypeText(data.type)
+        type.findViewById<TextView>(R.id.extra_info).text = getAttendanceTypeText(data.attedanceType!!)
         view.addView(type)
 
         val course = inflater.inflate(R.layout.button_item, null)
@@ -119,7 +204,7 @@ class AttendanceSortAdapter(private val mContext: Context,
         val type = inflater.inflate(R.layout.button_item, null)
         type.findViewById<View>(R.id.line_divider).visibility = View.VISIBLE
         type.findViewById<TextView>(R.id.title).text = "签到类型:"
-        type.findViewById<TextView>(R.id.extra_info).text = getAttendanceTypeText(data.type)
+        type.findViewById<TextView>(R.id.extra_info).text = getAttendanceTypeText(data.attedanceType!!)
         view.addView(type)
 
         val course = inflater.inflate(R.layout.button_item, null)

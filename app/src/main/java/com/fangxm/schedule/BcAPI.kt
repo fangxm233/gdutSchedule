@@ -14,7 +14,7 @@ class BcAPI {
         var loggedinType: String? = null
         const val host = "10.0.2.2:8888"
 
-        fun fetchUrl(url: String, callback: (Result<InputStream>) -> Unit) {
+        fun fetchUrl(url: String, callback: (Result<ByteArray>) -> Unit) {
             val url = URL(url)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
@@ -23,11 +23,11 @@ class BcAPI {
 
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
-            var result: Result<InputStream>? = null
+            var result: Result<ByteArray>? = null
             val thread = Thread {
                 if (conn.responseCode == 200) {
                     println("success get from ${conn.url}")
-                    result = Result.success(conn.inputStream)
+                    result = Result.success(conn.inputStream.readBytes())
                 } else {
                     result = Result.failure(java.net.ConnectException())
                 }
@@ -42,7 +42,7 @@ class BcAPI {
         fun postUrl(
             url: String,
             content: Map<String, String>?,
-            callback: (Result<InputStream>) -> Unit
+            callback: (Result<ByteArray>) -> Unit
         ) {
             val url = URL(url)
             val conn = url.openConnection() as HttpURLConnection
@@ -56,7 +56,7 @@ class BcAPI {
             val param = if (content != null) JwAPI.map2Url(content) else ""
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
-            var result: Result<InputStream>? = null
+            var result: Result<ByteArray>? = null
             val thread = Thread {
                 conn.connect()
                 val writer = OutputStreamWriter(conn.outputStream, "utf-8")
@@ -66,7 +66,7 @@ class BcAPI {
                 println(conn.responseCode)
                 result = if (conn.responseCode == 200) {
                     println("success post from ${conn.url}")
-                    Result.success(conn.inputStream)
+                    Result.success(conn.inputStream.readBytes())
                 } else {
                     Result.failure(java.net.ConnectException())
                 }
@@ -96,8 +96,8 @@ class BcAPI {
             return "http://$host/student_attendances?sno=$sno"
         }
 
-        private fun checkedInStusUrl(ano: String): String {
-            return "http://$host/checked_in_students?ano=$ano"
+        private fun attendanceDetailUrl(ano: String): String {
+            return "http://$host/attendance_detail?ano=$ano"
         }
 
         private fun teachingCoursesUrl(tno: String): String {
@@ -146,7 +146,7 @@ class BcAPI {
                         callback(Result.failure(Exception(content)))
                         return@postUrl
                     }
-                    loggedinType = type
+                    loggedinType = if (type == "t") "teacher" else "student"
                     this.no = no
                     callback(Result.success(Unit))
                     return@postUrl
@@ -166,8 +166,8 @@ class BcAPI {
             }
         }
 
-        fun getCheckedInStudents(ano: String, callback: (Result<JSONArray>) -> Unit) {
-            fetchUrl(checkedInStusUrl(ano)) {
+        fun getAttendanceDetail(ano: String, callback: (Result<JSONArray>) -> Unit) {
+            fetchUrl(attendanceDetailUrl(ano)) {
                 if (it.isSuccess) {
                     val content = JwAPI.getResponseBody(it.getOrThrow()).getJSONArray("content")
                     callback(Result.success(content))
@@ -204,7 +204,7 @@ class BcAPI {
             body["sno"] = no!!
             body["ano"] = ano
 
-            postUrl(getLoginUrl(), body) {
+            postUrl(checkinUrl(), body) {
                 if (it.isSuccess) {
                     val content = JwAPI.getResponseContent(it.getOrThrow())
                     if (content != "签到成功") {

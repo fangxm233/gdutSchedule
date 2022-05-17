@@ -27,9 +27,9 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    fun login(username: String, password: String, verifyCode: String, callback: (Result<String>) -> Unit) {
+    fun login(type: String, username: String, password: String, verifyCode: String, callback: (Result<Unit>) -> Unit) {
         // handle login
-        dataSource.login(username, password, verifyCode, callback)
+        dataSource.login(type, username, password, verifyCode, callback)
     }
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {
