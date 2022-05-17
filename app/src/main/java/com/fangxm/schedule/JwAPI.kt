@@ -2,6 +2,8 @@ package com.fangxm.schedule
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.fangxm.schedule.data.LocalDatabase
+import com.fangxm.schedule.data.TermsManager
 import com.fangxm.schedule.ui.third.Gzip
 import org.json.JSONArray
 import org.json.JSONObject
@@ -19,15 +21,13 @@ import kotlin.collections.HashMap
 
 class JwAPI {
     companion object {
-        var cookie: String? = "JSESSIONID=C385E62E7C6D068F6EB1714C739FD088;"
-
         fun fetchUrl(url: String, callback: (Result<ByteArray>) -> Unit) {
             val url = URL(url)
             val conn = url.openConnection() as HttpsURLConnection
             conn.requestMethod = "GET"
             conn.setRequestProperty("accept", ",*/*")
             conn.setRequestProperty("accept-encoding", "gzip, deflate, br")
-            conn.setRequestProperty("Cookie", cookie)
+            conn.setRequestProperty("Cookie", TermsManager.db.cookie)
 
             val h =
                 Thread.UncaughtExceptionHandler { _, ex -> println("Uncaught exception: $ex") }
@@ -37,7 +37,8 @@ class JwAPI {
                     println("success get from ${conn.url}")
                     conn.headerFields.forEach {
                         if (it.key == "Set-Cookie") {
-                            cookie = it.value[0].slice(IntRange(0, 43))
+                            val cookie = it.value[0].slice(IntRange(0, 43))
+                            TermsManager.db.cookie = cookie
                             println(cookie)
                         }
                     }
@@ -64,7 +65,7 @@ class JwAPI {
             conn.requestMethod = "POST"
             conn.setRequestProperty("accept", ",*/*")
             conn.setRequestProperty("accept-encoding", "gzip, deflate, br")
-            conn.setRequestProperty("Cookie", cookie)
+            conn.setRequestProperty("Cookie", TermsManager.db.cookie)
             conn.useCaches = false
             conn.doInput = true
             conn.doOutput = true
@@ -185,6 +186,7 @@ class JwAPI {
                     val content = getResponseBody(it.getOrThrow())
                     if (content["code"] == 0) {
                         callback(Result.success(Unit))
+                        TermsManager.db.SaveAccount(number, password)
                     } else {
                         callback(Result.failure(Exception(content["message"] as String)))
                     }

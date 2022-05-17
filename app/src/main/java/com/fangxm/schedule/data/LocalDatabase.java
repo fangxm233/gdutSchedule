@@ -176,11 +176,11 @@ public class LocalDatabase{
         return null;
     }
 
-    public void getCookie() {
-
+    public String getCookie() {
+        return null;
     }
 
-    public void setCookie() {
-        
+    public void setCookie(String cookie) {
+
     }
 }
