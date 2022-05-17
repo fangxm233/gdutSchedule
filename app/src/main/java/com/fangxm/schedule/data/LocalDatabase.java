@@ -16,6 +16,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Pair;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -157,5 +158,29 @@ public class LocalDatabase{
             return true;
         else
             return false;
+    }
+
+    public void SaveAccount(String account, String password) {
+
+    }
+
+    public Boolean IsSavedAccount() {
+        return false;
+    }
+
+    public void ClearAccount() {
+
+    }
+
+    public Pair<String, String> getAccount() {
+        return null;
+    }
+
+    public void getCookie() {
+
+    }
+
+    public void setCookie() {
+        
     }
 }
