@@ -1,5 +1,6 @@
 package com.fangxm.schedule.data;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -25,8 +26,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 //表3 登录信息
     public static final String CREATE_Account = "create table Account(" +
             "accountNumber text,"+
-            "API text,"+
-            "password text)";
+            "password text,"+
+            "cookie text)";
 //表4 学期时间
     public static final String CREATE_TermTime = "create table TermTime(" +
             "termId text,"+
@@ -46,6 +47,13 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TermCourse);
         db.execSQL(CREATE_Account);
         db.execSQL(CREATE_TermTime);
+        ContentValues values = new ContentValues();//创建临时变量用于存放数据
+        String Null=null;
+        values.put("accountNumber",Null);
+        values.put("password",Null);
+        values.put("cookie",Null);
+        db.insert("Account",null,values);// 插入数据
+        values.clear();
         Toast.makeText(mContext, "创建成功", Toast.LENGTH_SHORT).show();
     }
 

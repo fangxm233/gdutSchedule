@@ -6,11 +6,7 @@ import java.util.ArrayList;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
-import java.util.Vector;
-import java.util.List;
-import java.util.Collections;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -160,27 +156,71 @@ public class LocalDatabase{
             return false;
     }
 
+//存入账户数据 表4
     public void SaveAccount(String account, String password) {
-
+        SQLiteDatabase db1=dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("accountNumber",account);
+        values.put("password",password);
+        db1.update("Account", values,null,null);
     }
-
-    public Boolean IsSavedAccount() {
-        return false;
+//读取账户数据 表3
+    public Pair<String, String> getAccount() {
+        String[] selectionArgs = new  String[]{ "accountNumber", "password"};
+        SQLiteDatabase db1 = dbHelper.getWritableDatabase();
+        Cursor cursor1 = db1.query("Account",selectionArgs,null,null,null,null,null);
+        if(cursor1.moveToFirst()) {
+            do {
+                @SuppressLint("Range") String accountNumber = cursor1.getString(cursor1.getColumnIndex("accountNumber"));
+                @SuppressLint("Range") String password = cursor1.getString(cursor1.getColumnIndex("password"));
+                return new Pair(accountNumber,password);
+            } while (cursor1.moveToNext());
+        }
+        return null;
+    }
+//存入账户cookie 表3
+    public void setCookie(String cookie) {
+        SQLiteDatabase db1=dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("cookie",cookie);
+        db1.update("Account", values,null,null);
+    }
+//读取账户cookie 表3
+    public String getCookie() {
+        SQLiteDatabase db1 = dbHelper.getWritableDatabase();
+        Cursor cursor1 = db1.query("Account",null,null,null,null,null,null);
+        if(cursor1.moveToFirst()) {
+            do {
+                @SuppressLint("Range") String cookie = cursor1.getString(cursor1.getColumnIndex("cookie"));
+                return cookie;
+            } while (cursor1.moveToNext());
+        }
+        return null;
     }
 
     public void ClearAccount() {
-
+        SQLiteDatabase db1=dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String Null=null;
+        values.put("accountNumber",Null);
+        values.put("password",Null);
+        values.put("cookie",Null);
+        db1.update("Account", values,null,null);
     }
 
-    public Pair<String, String> getAccount() {
-        return null;
-    }
-
-    public String getCookie() {
-        return null;
-    }
-
-    public void setCookie(String cookie) {
-
+    public Boolean IsSavedAccount() {
+        String[] selectionArgs = new  String[]{ "accountNumber"};
+        SQLiteDatabase db1 = dbHelper.getWritableDatabase();
+        Cursor cursor1 = db1.query("Account",selectionArgs,null,null,null,null,null);
+        if(cursor1.moveToFirst()) {
+            do {
+                @SuppressLint("Range") String accountNumber = cursor1.getString(cursor1.getColumnIndex("accountNumber"));
+                if(accountNumber==null)
+                    return false;
+                else
+                    return true;
+            } while (cursor1.moveToNext());
+        }
+        return false;
     }
 }
