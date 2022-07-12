@@ -53,8 +53,12 @@ public class LocalDatabase{
                 values2.put("length", class_content.getLength());
                 values2.put("weekNum", class_content.getWeekNum());
                 values2.put("weekDate", class_content.getWeekDate());
+                values2.put("time", class_content.getTime());
+                values2.put("date", class_content.getDate());
                 values2.put("classroom", class_content.getClassroom());
                 values2.put("teacherName", class_content.getTeacherName());
+                values2.put("description", class_content.getDescription());
+                values2.put("examForm", class_content.getExamForm());
                 values2.put("color", class_content.getColor());
                 db1.insert("Course",null,values2);// 插入数据
             }
@@ -90,14 +94,12 @@ public class LocalDatabase{
         TermContent term_content=new TermContent(termId);
         term_content.setCourses(new HashMap<>());
         for(String courseTitle:termCourse) {
-            System.out.println(courseTitle);
             ArrayList<ClassContent> classList=new ArrayList<>();
             SQLiteDatabase db2 = dbHelper.getWritableDatabase();
             String selection2 = "title=?";
             String[] selectionArgs2 = new  String[]{ courseTitle };
             // 查询Course表中所有的数据
             Cursor cursor2 = db2.query("Course", null, selection2, selectionArgs2, null, null, null);
-            System.out.println(cursor2.getCount());
             if (cursor2.moveToFirst()) {
                 String title = null;
                 do {
@@ -109,10 +111,16 @@ public class LocalDatabase{
                     @SuppressLint("Range") int length = cursor2.getInt(cursor2.getColumnIndex("length"));
                     @SuppressLint("Range") int weekNum = cursor2.getInt(cursor2.getColumnIndex("weekNum"));
                     @SuppressLint("Range") int weekDate = cursor2.getInt(cursor2.getColumnIndex("weekDate"));
+                    @SuppressLint("Range") String time = cursor2.getString(cursor2.getColumnIndex("time"));
+                    @SuppressLint("Range") String date = cursor2.getString(cursor2.getColumnIndex("date"));
                     @SuppressLint("Range") String classroom = cursor2.getString(cursor2.getColumnIndex("classroom"));
                     @SuppressLint("Range") String teacherName = cursor2.getString(cursor2.getColumnIndex("teacherName"));
+                    @SuppressLint("Range") String description = cursor2.getString(cursor2.getColumnIndex("description"));
+                    @SuppressLint("Range") String examForm = cursor2.getString(cursor2.getColumnIndex("examForm"));
                     @SuppressLint("Range") String color = cursor2.getString(cursor2.getColumnIndex("color"));
-                    ClassContent A_Class=new ClassContent(type,title,classes,startNum,length,weekNum,weekDate,classroom,teacherName,color);
+                    ClassContent A_Class=new ClassContent(type,title,classes,
+                            startNum,length,weekNum,weekDate, time, date,
+                            classroom,description,teacherName,examForm,color);
                     classList.add(A_Class);
                 } while (cursor2.moveToNext());
                 CourseContent A_Course=new CourseContent(title, classList);
@@ -120,7 +128,6 @@ public class LocalDatabase{
             }
             cursor2.close();
         }
-        System.out.println(term_content.getCourses().size());
         //读取学期时间内容 表4
         String selection3 = "termId=?";
         String[] selectionArgs3 = new  String[]{ termId };

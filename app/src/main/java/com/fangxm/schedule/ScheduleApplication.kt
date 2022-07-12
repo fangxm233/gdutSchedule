@@ -20,9 +20,11 @@ class ScheduleApplication : Application() {
         // 监听所有Activity的生命周期回调
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                ActivityManager.setCurrentActivity(activity)
             }
 
             override fun onActivityStarted(activity: Activity) {
+                ActivityManager.setCurrentActivity(activity)
             }
 
             override fun onActivityResumed(activity: Activity) {

@@ -16,8 +16,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             "length integer,"+
             "weekNum integer,"+
             "weekDate integer,"+
+            "time text,"+
+            "date text,"+
             "classroom text,"+
             "teacherName text,"+
+            "description text,"+
+            "examForm text,"+
             "color text)";
 //表2 学期课程
     public static final String CREATE_TermCourse = "create table TermCourse(" +

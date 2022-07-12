@@ -3,14 +3,21 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/drawable/ic_add.xml" value="0.14583333333333334" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.26979166666666665" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/drawable/list_divider_line.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/drawable/round_background.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/drawable/round_title.xml" value="0.26979166666666665" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout-w1240dp/activity_login.xml" value="0.2" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout-w936dp/activity_login.xml" value="0.1" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/activity_checked_students.xml" value="0.24592391304347827" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/activity_ckecked_students.xml" value="0.24592391304347827" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/activity_login.xml" value="0.264" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/button_item.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/class_info.xml" value="0.264" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/content_grid.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/content_scrolling.xml" value="0.24592391304347827" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/course_item.xml" value="0.25364583333333335" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/empty_item.xml" value="0.1296875" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/fragment_attendance.xml" value="0.264" />
@@ -19,12 +26,14 @@
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/fragment_my.xml" value="0.264" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/fragment_schedule.xml" value="0.264" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/fragment_week_content.xml" value="0.264" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/horizontal_list_view.xml" value="0.24728260869565216" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/item.xml" value="0.25364583333333335" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/raise_attendance.xml" value="0.4" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/text_item.xml" value="0.24547101449275363" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/week_date_item.xml" value="0.1296875" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/layout/week_item.xml" value="0.25364583333333335" />
         <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/menu/bottom_nav_menu.xml" value="0.264" />
+        <entry key="..\:/Users/11267/AndroidStudioProjects/Schedule/app/src/main/res/menu/menu_ckecked_students.xml" value="0.264" />
       </map>
     </option>
   </component>

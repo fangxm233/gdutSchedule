@@ -1,7 +1,6 @@
 package com.fangxm.schedule
 
 import org.json.JSONArray
-import java.io.InputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -12,6 +11,7 @@ class BcAPI {
     companion object {
         var no: String? = null
         var loggedinType: String? = null
+        var name: String? = null
         const val host = "10.0.2.2:8888"
 
         fun fetchUrl(url: String, callback: (Result<ByteArray>) -> Unit) {
@@ -112,6 +112,10 @@ class BcAPI {
             return "http://$host/end_attendance"
         }
 
+        private fun teacherNameUrl(tno: String): String {
+            return "http://$host/teacher_name?tno=$tno"
+        }
+
         fun raiseAttendance(type: String, course: String, duration: String,
                             long: String?, lat: String?, callback: (Result<Unit>) -> Unit) {
             val body = HashMap<String, String>()
@@ -158,7 +162,7 @@ class BcAPI {
         fun getTeacherAttendances(callback: (Result<JSONArray>) -> Unit) {
             fetchUrl(getTeacherAttendancesUrl(this.no!!)) {
                 if (it.isSuccess) {
-                    val content = JwAPI.getResponseBody(it.getOrThrow()).getJSONArray("content")
+                    val content = JwAPI.getResponseObject(it.getOrThrow()).getJSONArray("content")
                     callback(Result.success(content))
                 } else {
                     callback(Result.failure(java.lang.Exception("unknown")))
@@ -169,7 +173,7 @@ class BcAPI {
         fun getAttendanceDetail(ano: String, callback: (Result<JSONArray>) -> Unit) {
             fetchUrl(attendanceDetailUrl(ano)) {
                 if (it.isSuccess) {
-                    val content = JwAPI.getResponseBody(it.getOrThrow()).getJSONArray("content")
+                    val content = JwAPI.getResponseObject(it.getOrThrow()).getJSONArray("content")
                     callback(Result.success(content))
                 } else {
                     callback(Result.failure(java.lang.Exception("unknown")))
@@ -180,7 +184,7 @@ class BcAPI {
         fun getStudentAttendances(callback: (Result<JSONArray>) -> Unit) {
             fetchUrl(getStudentAttendancesUrl(this.no!!)) {
                 if (it.isSuccess) {
-                    val content = JwAPI.getResponseBody(it.getOrThrow()).getJSONArray("content")
+                    val content = JwAPI.getResponseObject(it.getOrThrow()).getJSONArray("content")
                     callback(Result.success(content))
                 } else {
                     callback(Result.failure(java.lang.Exception("unknown")))
@@ -191,7 +195,7 @@ class BcAPI {
         fun getTeachingCourses(callback: (Result<JSONArray>) -> Unit) {
             fetchUrl(teachingCoursesUrl(this.no!!)) {
                 if (it.isSuccess) {
-                    val content = JwAPI.getResponseBody(it.getOrThrow()).getJSONArray("content")
+                    val content = JwAPI.getResponseObject(it.getOrThrow()).getJSONArray("content")
                     callback(Result.success(content))
                 } else {
                     callback(Result.failure(java.lang.Exception("unknown")))
@@ -199,10 +203,14 @@ class BcAPI {
             }
         }
 
-        fun checkin(ano: String, callback: (Result<Unit>) -> Unit) {
+        fun checkin(ano: String, long: String?, lat: String?, callback: (Result<Unit>) -> Unit) {
             val body = HashMap<String, String>()
             body["sno"] = no!!
             body["ano"] = ano
+            if (long != null) {
+                body["long"] = long
+                body["lat"] = lat!!
+            }
 
             postUrl(checkinUrl(), body) {
                 if (it.isSuccess) {
@@ -226,6 +234,19 @@ class BcAPI {
                 if (it.isSuccess) {
                     callback(Result.success(Unit))
                     return@postUrl
+                }
+                callback(Result.failure(java.lang.Exception("未知错误")))
+            }
+        }
+
+        fun getTeacherName(tno: String, callback: (Result<String>) -> Unit) {
+            fetchUrl(teacherNameUrl(tno)) {
+                if (it.isSuccess) {
+                    val name = JwAPI.getResponseContent(it.getOrThrow())
+                    this.name = name
+                    println(name)
+                    callback(Result.success(name))
+                    return@fetchUrl
                 }
                 callback(Result.failure(java.lang.Exception("未知错误")))
             }

@@ -6,15 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".ui.schedule.ScheduleFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@id/week_display"
+    <HorizontalScrollView
+        android:id="@+id/week_display_scroller"
         android:layout_width="match_parent"
         android:layout_height="25dp"
-        android:orientation="horizontal"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/week_display"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
+    </HorizontalScrollView>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -23,7 +29,7 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/week_display">
+        app:layout_constraintTop_toBottomOf="@+id/week_display_scroller">
 
         <TextView
             android:id="@+id/text_current_week"
@@ -258,12 +264,10 @@
         android:layout_width="1dp"
         android:layout_height="0dp"
         android:layout_marginStart="3dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@id/week_display" />
+        app:layout_constraintTop_toBottomOf="@+id/week_display_scroller" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/content_page"
@@ -272,6 +276,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/divider15"
-        app:layout_constraintTop_toBottomOf="@+id/week_display" />
+        app:layout_constraintTop_toBottomOf="@+id/week_display_scroller" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

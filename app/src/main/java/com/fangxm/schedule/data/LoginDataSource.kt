@@ -19,7 +19,7 @@ class LoginDataSource {
     fun login(type: String, number: String, password: String, verifyCode: String, callback: (Result<Unit>) -> Unit) {
         if (type == "student") {
             JwAPI.login(number, password, verifyCode, callback)
-            BcAPI.login(type[0].toString(), number, password){
+            BcAPI.login(type[0].toString(), number, password) {
                 if (it.isSuccess) {
                     println("考勤登录成功")
                 } else {
@@ -27,7 +27,17 @@ class LoginDataSource {
                 }
             }
         }
-        else BcAPI.login(type[0].toString(), number, password, callback)
+        else {
+            BcAPI.login(type[0].toString(), number, password) {
+                if (it.isSuccess) {
+                    BcAPI.getTeacherName(number) {
+                        callback(Result.success(Unit))
+                    }
+                } else {
+                    callback(it)
+                }
+            }
+        }
     }
 
     fun logout() {

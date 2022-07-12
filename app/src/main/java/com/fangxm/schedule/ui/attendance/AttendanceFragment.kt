@@ -62,7 +62,12 @@ class AttendanceFragment : Fragment() {
             if (view.tag is AttendanceContent) {
                 val content = view.tag as AttendanceContent
                 if (BcAPI.loggedinType == "student") {
-                    BcAPI.checkin(content.ano!!) {
+                    val activity = ActivityManager.getCurrentActivity() as MainActivity
+                    val long = 0
+                    val lat = 0
+//                    val long = activity.getLocation()!!.longitude
+//                    val lat = activity.getLocation()!!.latitude
+                    BcAPI.checkin(content.ano!!, long.toString(), lat.toString()) {
                         if (it.isSuccess) {
                             Toast.makeText(requireContext(), "签到成功", Toast.LENGTH_SHORT).show()
                             fetchData()
@@ -175,7 +180,7 @@ class AttendanceFragment : Fragment() {
 
                 refreshList()
             }
-        } else {
+        } else { // student
             BcAPI.getStudentAttendances {
                 if (it.isFailure) {
                     Toast.makeText(requireContext(), "获取失败", Toast.LENGTH_SHORT).show()
@@ -197,7 +202,7 @@ class AttendanceFragment : Fragment() {
                     val time = format.format(content.getLong("time"))
                     val current = Calendar.getInstance()
                     val dur = content.getString("dur").toInt()
-                    val min = (current.timeInMillis - content.getLong("time")) / 1000 / 60
+                    val min = (current.timeInMillis - content.getLong("time")) / 1000.0 / 60
 
                     data.add(AttendanceContent(content.getString("type"),
                         content.getString("ano"), content.getString("cname"),
@@ -221,8 +226,10 @@ class AttendanceFragment : Fragment() {
         val adapter = AttendanceSortAdapter(requireContext(), this.type!!,
             current!!, history!!, teachingCourses, duration) { cno, duration, locate ->
             val activity = ActivityManager.getCurrentActivity() as MainActivity
-            val long = activity.getLocation()!!.longitude
-            val lat = activity.getLocation()!!.latitude
+            val long = 0
+            val lat = 0
+//            val long = activity.getLocation()!!.longitude
+//            val lat = activity.getLocation()!!.latitude
             BcAPI.raiseAttendance(if (locate) "1" else "0", cno, duration.toString(), long.toString(), lat.toString()) {
                 if (it.isSuccess) {
                     Toast.makeText(requireContext(), "签到发起成功", Toast.LENGTH_SHORT).show()

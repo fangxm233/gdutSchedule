@@ -2,13 +2,11 @@ package com.fangxm.schedule
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.fangxm.schedule.data.LocalDatabase
 import com.fangxm.schedule.data.TermsManager
 import com.fangxm.schedule.ui.third.Gzip
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.io.InputStream
 import java.io.OutputStreamWriter
 
 import java.net.URL
@@ -111,11 +109,56 @@ class JwAPI {
             return url.toString()
         }
 
-        fun getResponseBody(stream: ByteArray): JSONObject {
-            val reader = stream.toString(Charset.forName("utf-8"))
-            val tokener = JSONTokener(reader)
-            val json = JSONObject(tokener)
-            return json
+        fun getResponseObject(stream: ByteArray): JSONObject {
+            val content = decodeResourceToString(stream)
+            val tokenizer = JSONTokener(content)
+            return JSONObject(tokenizer)
+        }
+
+        fun getResponseArray(stream: ByteArray): JSONArray {
+            val content = decodeResourceToString(stream)
+            val tokenizer = JSONTokener(content)
+            return JSONArray(tokenizer)
+        }
+
+        fun checkAndGetResponseObject(stream: ByteArray): Result<JSONObject> {
+            val content = decodeResourceToString(stream)
+            if (content.contains("请输入学号或工号")) {
+                println("登录信息过期")
+                return Result.failure(Exception("登录信息过期"))
+            }
+            if (content.contains("禁止访问")) {
+                println("被禁止访问")
+                return Result.failure(Exception("被禁止访问教务处"))
+            }
+            return try {
+                val tokenizer = JSONTokener(content)
+                val json = JSONObject(tokenizer)
+                Result.success(json)
+            } catch (e: java.lang.Exception) {
+                println("解析失败")
+                Result.failure(Exception("解析失败"))
+            }
+        }
+
+        fun checkAndGetResponseArray(stream: ByteArray): Result<JSONArray> {
+            val content = decodeResourceToString(stream)
+            if (content.contains("请输入学号或工号")) {
+                println("登录信息过期")
+                return Result.failure(Exception("登录信息过期"))
+            }
+            if (content.contains("禁止访问")) {
+                println("被禁止访问")
+                return Result.failure(Exception("被禁止访问教务处"))
+            }
+            return try {
+                val tokenizer = JSONTokener(content)
+                val json = JSONArray(tokenizer)
+                Result.success(json)
+            } catch (e: java.lang.Exception) {
+                println("解析失败")
+                Result.failure(Exception("解析失败"))
+            }
         }
 
         fun decodeResourceToString(stream: ByteArray): String {
@@ -183,57 +226,14 @@ class JwAPI {
             body["verifycode"] = verifyCode
             postUrl(getLoginUrl(), body) {
                 if (it.isSuccess) {
-                    val content = getResponseBody(it.getOrThrow())
+                    val reader = it.getOrThrow().toString(Charset.forName("utf-8"))
+                    val tokener = JSONTokener(reader)
+                    val content = JSONObject(tokener)
                     if (content["code"] == 0) {
                         callback(Result.success(Unit))
                         TermsManager.db.SaveAccount(number, password)
                     } else {
                         callback(Result.failure(Exception(content["message"] as String)))
-                    }
-                }
-            }
-        }
-
-        fun getCoursesData(termId: String, callback: (Result<JSONArray>) -> Unit) {
-            val body = HashMap<String, String>()
-            body["xnxqdm"] = termId
-
-            postUrl(getCurseUrl(), body) {
-                if (it.isSuccess) {
-                    val content = decodeResourceToString(it.getOrThrow())
-                    if (content.contains("请输入学号或工号")) {
-                        println("登录信息过期")
-                        callback(Result.failure(Exception("登录信息过期")))
-                        return@postUrl
-                    }
-                    if (content.contains("禁止访问")) {
-                        println("被禁止访问")
-                        callback(Result.failure(Exception("被禁止访问教务处")))
-                        return@postUrl
-                    }
-
-                    val start = content.indexOf("<script type=\"text/javascript\">")
-                    println(content)
-                    if (start == -1) {
-                        println("解析失败")
-                        callback(Result.failure(Exception("解析失败")))
-                        return@postUrl
-                    }
-                    val script = content.slice(start until content.length)
-
-                    val pattern = Pattern.compile("\\[.*\\];")
-                    val matcher = pattern.matcher(script)
-                    if (matcher.find()) {
-                        val data = matcher.group(0)
-                        val tokener = JSONTokener(data)
-                        val json = JSONArray(tokener)
-                        println(json)
-                        callback(Result.success(json))
-                        return@postUrl
-                    } else {
-                        println("解析失败")
-                        callback(Result.failure(Exception("解析失败")))
-                        return@postUrl
                     }
                 }
             }
@@ -247,22 +247,12 @@ class JwAPI {
 
             postUrl(getExamUrl(), body) {
                 if (it.isSuccess) {
-                    val content = decodeResourceToString(it.getOrThrow())
-                    if (content.contains("请输入学号或工号")) {
-                        println("登录信息过期")
-                        callback(Result.failure(Exception("登录信息过期")))
+                    val result = checkAndGetResponseObject(it.getOrThrow())
+                    if (result.isFailure) {
+                        callback(Result.failure(result.exceptionOrNull()!!))
                         return@postUrl
                     }
-
-                    var json: JSONObject? = null
-                    try {
-                        val tokener = JSONTokener(content)
-                        json = JSONObject(tokener)
-                    } catch (e: java.lang.Exception) {
-                        println("解析失败")
-                        callback(Result.failure(Exception("解析失败")))
-                        return@postUrl
-                    }
+                    val json = result.getOrThrow()
 
                     if (!json.has("rows")) {
                         println("解析失败")
@@ -291,7 +281,27 @@ class JwAPI {
             body["page"] = "1"
             body["rows"] = "30"
 
-            //post gzip
+            postUrl(getCourseTaskUrl(), body) {
+                if (it.isSuccess) {
+                    val result = checkAndGetResponseObject(it.getOrThrow())
+                    if (result.isFailure) {
+                        callback(Result.failure(result.exceptionOrNull()!!))
+                        return@postUrl
+                    }
+                    val json = result.getOrThrow()
+
+                    if (!json.has("rows")) {
+                        println("解析失败")
+                        callback(Result.failure(Exception("解析失败")))
+                        return@postUrl
+                    }
+
+                    println(json.getJSONArray("rows"))
+                    callback(Result.success(json.getJSONArray("rows")))
+                } else {
+                    callback(Result.failure(java.lang.Exception("获取失败")))
+                }
+            }
         }
 
         fun getCourseData(courseId: String, callback: (Result<JSONArray>) -> Unit) {
@@ -300,35 +310,44 @@ class JwAPI {
             body["page"] = "1"
             body["rows"] = "100"
 
-            // post gzip
+            postUrl(getCourseDataUrl(), body) {
+                if (it.isSuccess) {
+                    val result = checkAndGetResponseObject(it.getOrThrow())
+                    if (result.isFailure) {
+                        callback(Result.failure(result.exceptionOrNull()!!))
+                        return@postUrl
+                    }
+                    val json = result.getOrThrow()
+
+                    if (!json.has("rows")) {
+                        println("解析失败")
+                        callback(Result.failure(Exception("解析失败")))
+                        return@postUrl
+                    }
+
+                    callback(Result.success(json.getJSONArray("rows")))
+                } else {
+                    callback(Result.failure(java.lang.Exception("获取失败")))
+                }
+            }
         }
 
         fun getTermStartDate(termId: String, callback: (Result<Calendar>) -> Unit) {
             fetchUrl(getTermStartDateUrl(termId)) {
                 if (it.isSuccess) {
-                    val content = decodeResourceToString(it.getOrThrow())
-                    if (content.contains("请输入学号或工号")) {
-                        println("登录信息过期")
-                        callback(Result.failure(Exception("登录信息过期")))
+                    val result = checkAndGetResponseArray(it.getOrThrow())
+                    if (result.isFailure) {
+                        callback(Result.failure(result.exceptionOrNull()!!))
                         return@fetchUrl
                     }
+                    val json = result.getOrThrow()
 
-                    var json: JSONArray? = null
-                    try {
-                        val tokener = JSONTokener(content)
-                        json = JSONArray(tokener)
-                    } catch (e: java.lang.Exception) {
-                        println("解析失败")
-                        callback(Result.failure(Exception("解析失败")))
-                        return@fetchUrl
-                    }
-
-                    val date = json!!.getJSONArray(1)
+                    val date = json.getJSONArray(1)
                         .getJSONObject(0).getString("rq").split("-").map {
                             it.toInt()
                         }
                     val calendar = Calendar.getInstance()
-                    calendar.set(date[0], date[1], date[2])
+                    calendar.set(date[0], date[1] - 1, date[2])
                     println("开学日期：$calendar")
                     callback(Result.success(calendar))
                 } else {

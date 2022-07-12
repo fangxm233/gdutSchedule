@@ -4,15 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.view.animation.Animation
+import android.view.animation.Animation.AnimationListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.fangxm.schedule.BcAPI
 import com.fangxm.schedule.data.MyCalendar
 import com.fangxm.schedule.data.TermsManager
 import com.fangxm.schedule.databinding.FragmentScheduleBinding
 import com.fangxm.schedule.ui.schedule.weekContent.OnPageChangeCallBack
 import com.fangxm.schedule.ui.schedule.weekContent.WeekContentFragmentAdapter
 import java.util.*
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
+
+
+
 
 class ScheduleFragment : Fragment() {
 
@@ -42,24 +50,26 @@ class ScheduleFragment : Fragment() {
         val recyclerView = binding.weekDisplay
         val pager = binding.contentPage
 
+        val termId = "202201"
         TermsManager.init(requireContext())
-        if (!TermsManager.hasTermData("202102")) {
+        if (!TermsManager.hasTermData(termId)) {
             return root
         }
 
-        val weekData = TermsManager.getTermCoursesByWeek("202102")
+        val weekData = if (BcAPI.loggedinType == "teacher")
+            TermsManager.getTeacherTermCoursesByWeek(termId, BcAPI.name!!)
+        else TermsManager.getTermCoursesByWeek(termId)
+
         val list = List(weekData.size) {
             "第" + (it + 1) + "周"
         }
 
-        val horizontalLayoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.layoutManager = horizontalLayoutManager
-        val weekNumAdapter = ScheduleWeekNumAdapter(requireContext(), list) {
+        val weekNumScroller = binding.weekDisplayScroller
+        val weekNumAdapter = ScheduleWeekNumAdapter(recyclerView, requireContext(), list) {
             pager.setCurrentItem(it, true)
         }
-        recyclerView.adapter = weekNumAdapter
 
-        var startDate = MyCalendar(TermsManager.getTermStartDate("202102")).previousDay()
+        var startDate = MyCalendar(TermsManager.getTermStartDate(termId)).previousDay()
 
         val data = Array(weekData.size) {
             (1..7).map {weekDate ->
@@ -74,28 +84,20 @@ class ScheduleFragment : Fragment() {
         pager.adapter = fragmentAdapter
 
         pager.registerOnPageChangeCallback(OnPageChangeCallBack{
-            var targetX = 0
-            var targetWidth = 0
-
-            for (index in list.indices) {
-                val view = (recyclerView.adapter as ScheduleWeekNumAdapter).getView(index)
-                if (index >= it) {
-                    targetWidth = view.width
-                    (recyclerView.adapter as ScheduleWeekNumAdapter).setFocused(view)
-                    break
-                }
-                targetX += view.width
-            }
-
-            targetX -= recyclerView.width / 2 - targetWidth / 2
-            targetX = 0.coerceAtLeast(targetX)
-            val current = recyclerView.computeHorizontalScrollOffset()
-
-            recyclerView.smoothScrollBy(targetX - current, 0)
-
+            val endPos = weekNumAdapter.getView(it).x.toInt()
+            val halfWidth = weekNumAdapter.getView(it).width / 2
+            weekNumAdapter.setFocused(weekNumAdapter.getView(it))
+            weekNumScroller.smoothScrollTo(endPos + halfWidth - weekNumScroller.width / 2, 0)
             binding.textCurrentWeek.text = (it + 1).toString()
         })
 
+        root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val currentWeek = TermsManager.currentWeek(termId)
+                pager.setCurrentItem(currentWeek - 1, true)
+                root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
         return root
     }
 

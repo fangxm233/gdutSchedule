@@ -1,12 +1,15 @@
 package com.fangxm.schedule.ui.schedule.weekContent
 
+import android.animation.ValueAnimator
 import android.graphics.Color
-import android.opengl.Visibility
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fangxm.schedule.R
@@ -14,7 +17,11 @@ import com.fangxm.schedule.data.ClassContent
 import com.fangxm.schedule.data.MyCalendar
 import com.fangxm.schedule.databinding.FragmentWeekContentBinding
 import com.fangxm.schedule.ui.third.CustomButton
-import java.util.*
+
+import android.view.WindowManager
+import android.view.animation.AlphaAnimation
+import android.animation.ValueAnimator.AnimatorUpdateListener
+import com.fangxm.schedule.ui.util.Animations
 
 class WeekContentFragment(var weekData: Array<Pair<MyCalendar, Array<ClassContent>>>) : Fragment() {
     private var _binding: FragmentWeekContentBinding? = null
@@ -65,6 +72,51 @@ class WeekContentFragment(var weekData: Array<Pair<MyCalendar, Array<ClassConten
                     .setBgPressedColor(Color.parseColor(it.color)).use()
                     if (it.type == "exam") {
                         courseView.findViewById<TextView>(R.id.exam).visibility = View.VISIBLE
+                    }
+                    courseView.setOnClickListener { view ->
+                        val classInfo = inflater.inflate(R.layout.class_info, null)
+                        classInfo.findViewById<TextView>(R.id.content1).movementMethod = ScrollingMovementMethod.getInstance()
+                        classInfo.findViewById<TextView>(R.id.content2).movementMethod = ScrollingMovementMethod.getInstance()
+                        classInfo.findViewById<TextView>(R.id.content3).movementMethod = ScrollingMovementMethod.getInstance()
+                        classInfo.findViewById<TextView>(R.id.content4).movementMethod = ScrollingMovementMethod.getInstance()
+                        classInfo.findViewById<TextView>(R.id.content5).movementMethod = ScrollingMovementMethod.getInstance()
+                        if (it.type == "exam") {
+                            classInfo.findViewById<TextView>(R.id.title).text = it.title + " 考试"
+                            classInfo.findViewById<TextView>(R.id.label1).text = "考试地点:"
+                            classInfo.findViewById<TextView>(R.id.content1).text = it.classroom
+                            classInfo.findViewById<TextView>(R.id.label2).text = "考试时间:"
+                            classInfo.findViewById<TextView>(R.id.content2).text = it.time
+                            classInfo.findViewById<TextView>(R.id.label3).text = "考试形式:"
+                            classInfo.findViewById<TextView>(R.id.content3).text = it.examForm
+                            classInfo.findViewById<TextView>(R.id.label4).text = "监考老师:"
+                            classInfo.findViewById<TextView>(R.id.content4).text = it.teacherName
+                            classInfo.findViewById<TextView>(R.id.label5).text = "考试日期:"
+                            classInfo.findViewById<TextView>(R.id.content5).text = it.date
+                        } else {
+                            classInfo.findViewById<TextView>(R.id.title).text = it.title
+                            classInfo.findViewById<TextView>(R.id.label1).text = "上课地点:"
+                            classInfo.findViewById<TextView>(R.id.content1).text = it.classroom
+                            classInfo.findViewById<TextView>(R.id.label2).text = "上课时间:"
+                            classInfo.findViewById<TextView>(R.id.content2).text = it.time
+                            classInfo.findViewById<TextView>(R.id.label3).text = "任课老师:"
+                            classInfo.findViewById<TextView>(R.id.content3).text = it.teacherName
+                            classInfo.findViewById<TextView>(R.id.label4).text = "授课内容:"
+                            classInfo.findViewById<TextView>(R.id.content4).text = it.description
+                            classInfo.findViewById<TextView>(R.id.label5).text = "上课班级:"
+                            classInfo.findViewById<TextView>(R.id.content5).text = it.classes
+                        }
+                        val popup = PopupWindow(classInfo, 900,800)
+                        popup.isOutsideTouchable = true
+                        popup.isFocusable = true
+
+                        val window = requireActivity().window
+                        popup.animationStyle = R.style.PopupAnimation
+                        Animations.fadeInBackground(window, 0.5f, 200)
+                        popup.setOnDismissListener {
+                            Animations.fadeOutBackground(window, 0.5f, 200)
+                        }
+
+                        popup.showAtLocation(window.decorView, Gravity.CENTER, 0, 0)
                     }
                     param = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                         0, 5f * it.length)
